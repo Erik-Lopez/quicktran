@@ -3,6 +3,10 @@
 
 #include <ncurses.h>
 
+#define WIN_AMOUNT 4
+#define TEXT_CAP 4
+#define LANG_CAP 4
+
 struct Box
 {
 	WINDOW *window;

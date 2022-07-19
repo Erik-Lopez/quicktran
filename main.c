@@ -1,29 +1,19 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <assert.h>
+#include <locale.h>
+
 #include "config.h"
 #include "box.h"
+#include "popups.h"
 
 #define WIN_AMOUNT 4
 #define TEXT_CAP 12
 #define LANG_CAP 12
 
-void show_debug_win(WINDOW *debug_window, chtype *text)
-{
-	waddchstr(debug_window, text);
-	wrefresh(debug_window);
-	wgetch(debug_window);
-}
-
-void show_error_win(WINDOW *debug_window, chtype *text)
-{
-	show_debug_win(debug_window, text);
-	endwin();
-	exit(1);
-}
-
 int main()
 {
+	setlocale(LC_ALL, "");
 	initscr();
 	noecho();
 	start_color();
@@ -58,10 +48,10 @@ int main()
 	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
-	box_craete(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin));
-	box_craete(&src_textbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
-	box_craete(&dest_langbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
-	box_craete(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col));
+	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin));
+	box_create(&src_textbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
+	box_create(&dest_langbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
+	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col));
 
 	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
 
