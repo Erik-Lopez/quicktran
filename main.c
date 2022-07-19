@@ -1,21 +1,51 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <assert.h>
+#include <wchar.h>
 #include <locale.h>
 
 #include "config.h"
 #include "box.h"
 #include "popups.h"
 
+char *wchar_to_char(wchar_t *wstr, size_t length)
+{
+	char *str = (char*)malloc(length);
+	for (size_t i = 0; i < length; i++)
+		str[i] = (char)wstr[i];
+	return str;
+}
+
 void translate(struct Box **boxes)
 {
 	// This is the order: src_langbox, src_textbox, dest_langbox, dest_textbox
-	chtype *src_lang = boxes[0]->content;
-	chtype *src_text = boxes[1]->content;
-	chtype *dest_lang = boxes[2]->content;
-	chtype *dest_text = boxes[3]->content;
+	wchar_t *src_wlang = (wchar_t*)boxes[0]->content;
+	wchar_t *src_text = (wchar_t*)boxes[1]->content;
+	wchar_t *dest_wlang = (wchar_t*)boxes[2]->content;
+	wchar_t *dest_text = (wchar_t*)boxes[3]->content;
 
-	//printw("Traducir '%ls' del '%ls' al '%ls' sería '%ls'.", src_text, src_lang, dest_lang, dest_text);
+	char *src_lang = wchar_to_char(src_wlang, LANG_CAP);
+	char *dest_lang = wchar_to_char(dest_wlang, LANG_CAP);
+
+	//multiply times 2 because widestring to string conversion
+	//TODO: fwprintf() y en general usar widechars
+	//
+#define BUFSIZE (12 + LANG_CAP*2 + 5 + LANG_CAP*2 + 3 + TEXT_CAP*2 + 1 + 100000)
+	char *src_text2 = wchar_to_char(src_text, TEXT_CAP); 
+	char *options = "-brief -no-ansi";
+
+	char command[BUFSIZE];
+	sprintf(command, "trans -from %s -to %s \"%s\" %s", 
+		src_lang, dest_lang, src_text2, options);
+
+	FILE *pipe = popen(command, "r");
+
+	//fgetws(dest_text, TEXT_CAP, pipe);
+	while(fgets((char*)dest_text, TEXT_CAP, pipe));
+
+	printw("Traducir '%ls' del '%s' al '%s' sería '%s'.", src_text, src_lang, dest_lang, (char*)dest_text);
+
+	pclose(pipe);
 
 	getch();
 	exit(1);
@@ -59,8 +89,8 @@ int main()
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
 	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin));
-	box_create(&src_textbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
-	box_create(&dest_langbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
+	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
+	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
 	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col));
 
 	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
