@@ -2,10 +2,7 @@
 #define _BOX_H
 
 #include <ncurses.h>
-
-#define WIN_AMOUNT 4
-#define TEXT_CAP 500
-#define LANG_CAP 500
+#include "config.h"
 
 struct Box
 {

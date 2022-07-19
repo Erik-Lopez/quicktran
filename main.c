@@ -7,10 +7,6 @@
 #include "box.h"
 #include "popups.h"
 
-#define WIN_AMOUNT 4
-#define TEXT_CAP 500
-#define LANG_CAP 500
-
 void translate(struct Box **boxes)
 {
 	// This is the order: src_langbox, src_textbox, dest_langbox, dest_textbox
