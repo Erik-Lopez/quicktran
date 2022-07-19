@@ -14,6 +14,59 @@ struct Box
 	chtype *last_element;
 };
 
+
+NCURSES_BOOL box_isfull(struct Box *box)
+{
+	return box->last_element + 2 == box->content + TEXT_CAP;
+}
+
+NCURSES_BOOL box_isempty(struct Box *box)
+{
+	return box->last_element == box->content;
+}
+
+
+void box_delchtype(struct Box *box)
+{
+	if (box_isempty(box)) {
+		endwin();
+		exit(1);
+	}
+
+	box->last_element--;
+	*(box->last_element) = 0;
+
+	int y, x;
+	getyx(box->window, y, x);
+	mvwdelch(box->window, y, x-1);
+}
+
+void box_addchtype(struct Box *box, chtype ch)
+{
+	if (box_isfull(box) == TRUE) {
+		endwin();
+		exit(1);
+	}
+
+	*(box->last_element) = ch;
+	box->last_element++;
+	waddch(box->window, ch);
+}
+
+void box_refreshwins(struct Box **boxes)
+{
+	for (int i = 0; i < WIN_AMOUNT; i++)
+		wnoutrefresh(boxes[i]->window);
+
+	doupdate();
+}
+
+void change_focused_box(struct Box **boxes, struct Box *focused_box, int *focused_box_idx)
+{
+	*focused_box_idx = (*focused_box_idx + 1) % WIN_AMOUNT;
+	focused_box = boxes[*focused_box_idx];
+}
+
 void create_box(struct Box *b, WINDOW *window)
 {
 	b->window = window;
@@ -94,42 +147,20 @@ int main()
 	doupdate();
 
 	chtype ch;
-	int y, x;
-	
+
 	while ((ch = wgetch(focused_box->window)) != '~') {
 		switch (ch) {
 		case '\t':
-			focused_box_idx = (focused_box_idx + 1) % WIN_AMOUNT;
-			focused_box = boxes[focused_box_idx];
+			change_focused_box(&boxes, focused_box, &focused_box_idx);
 			break;
 		case KEY_BACKSPACE:
-			// TODO: put into a function
-			focused_box->last_element--;
-			*(focused_box->last_element) = 0;
-
-			getyx(focused_box->window, y, x);
-			mvwdelch(focused_box->window, y, x-1);
+			box_delchtype(focused_box);
 			break;
 		default:
-			// TODO: put into a function
-			if (focused_box->last_element + 2 == focused_box->content + TEXT_CAP) {
-				show_debug_win(debug_window, boxes[0]->content);
-				show_debug_win(debug_window, boxes[1]->content);
-				show_debug_win(debug_window, boxes[2]->content);
-				show_error_win(debug_window, boxes[3]->content);
-				continue;
-			}
-
-			*(focused_box->last_element) = ch;
-			focused_box->last_element++;
-			waddch(focused_box->window, ch);
+			box_addchtype(focused_box, ch);
 		}
 		
-		// TODO: Put this into a function (Maybe?)
-		for (int i = 0; i < WIN_AMOUNT; i++) {
-			wnoutrefresh(boxes[i]->window);
-		}
-		doupdate();
+		box_refreshwins(boxes);
 	}
 
 	endwin();
