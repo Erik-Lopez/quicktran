@@ -4,8 +4,25 @@
 #include "config.h"
 
 #define WIN_AMOUNT 4
-#define TEXT_CAP 6
-#define LANG_CAP 6
+#define TEXT_CAP 12
+#define LANG_CAP 12
+
+struct Box
+{
+	WINDOW *window;
+	chtype content[TEXT_CAP];
+	chtype *last_element;
+};
+
+void create_box(struct Box *b, WINDOW *window)
+{
+	b->window = window;
+
+	for (int i = 0; i < TEXT_CAP; i++)
+		b->content[i] = 0;
+
+	b->last_element = &(b->content[0]);
+}
 
 void show_debug_win(WINDOW *debug_window, chtype *text)
 {
@@ -56,86 +73,61 @@ int main()
 	const int dest_boxes_col	= STDSCR_PADDING + windows_width + TEXT_TEXT_PADDING;
 	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
 
-	WINDOW *src_langbox	= newwin(langbox_height, windows_width, 
-					main_origin, main_origin);
-	WINDOW *dest_langbox	= newwin(langbox_height, windows_width, 
-					main_origin, dest_boxes_col);
-	WINDOW *src_textbox	= newwin(textbox_height, windows_width, 
-					textboxes_row, main_origin);
-	WINDOW *dest_textbox	= newwin(textbox_height, windows_width,
-					textboxes_row, dest_boxes_col);
+	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
+	create_box(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin));
+	create_box(&src_textbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
+	create_box(&dest_langbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
+	create_box(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col));
 
-	WINDOW *wins[WIN_AMOUNT] = { src_langbox, src_textbox, dest_langbox, dest_textbox };
+	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
 
-	/* Variable pointing to some of the previous windows. */
-	int focused_window_idx = 0;
-	WINDOW *focused_window = wins[focused_window_idx];
+	int focused_box_idx	= 0;
+	struct Box *focused_box	= boxes[focused_box_idx];
 
 	// TODO: turn this kind of code into a foreach with vararg functions (Maybe?)
 	
 	for (int i = 0; i < WIN_AMOUNT; i++) {
-		keypad(wins[i], TRUE);
-		wbkgd(wins[i], COLOR_PAIR(1));
-		wnoutrefresh(wins[i]);
+		keypad(boxes[i]->window, TRUE);
+		wbkgd(boxes[i]->window, COLOR_PAIR(1));
+		wnoutrefresh(boxes[i]->window);
 	}
 	doupdate();
 
 	chtype ch;
 	int y, x;
-	//int last_item_idx = 0;		// src_lang[last_item_idx + 1] should *always* be 0.
-	// all `last_item_idx` has been replaced with `last_char_indices[focused_window_idx]`
 	
-	// TODO: we ABSOLUTELY need a Box struct with a last_char_idx, a buffer and a window
-	chtype src_lang[LANG_CAP] = {0};    // ideally should be char*, but let's ignore that
-	int last_src_lang_char_index = 0;
-	chtype dest_lang[LANG_CAP] = {0};   // also should be char*
-	int last_dest_lang_char_index = 0;
-	chtype src_text[TEXT_CAP] = {0};
-	int last_src_text_char_index = 0;
-	chtype dest_text[TEXT_CAP] = {0};
-	int last_dest_text_char_index = 0;
-
-	// Same order as the windows arrays
-	int last_char_indices[WIN_AMOUNT] = { last_src_lang_char_index, last_src_text_char_index, last_dest_lang_char_index, last_dest_text_char_index};
-
-	// Same order as wins[] array.
-	chtype *contents[WIN_AMOUNT] = { src_lang, src_text, dest_lang, dest_text };
-
-	while ((ch = wgetch(focused_window)) != '~') {
+	while ((ch = wgetch(focused_box->window)) != '~') {
 		switch (ch) {
 		case '\t':
-			focused_window_idx = (focused_window_idx + 1) % WIN_AMOUNT;
-			focused_window = wins[focused_window_idx];
+			focused_box_idx = (focused_box_idx + 1) % WIN_AMOUNT;
+			focused_box = boxes[focused_box_idx];
 			break;
 		case KEY_BACKSPACE:
 			// TODO: put into a function
-			//last_item_idx--;
-			last_char_indices[focused_window_idx]--;
-			contents[focused_window_idx][last_char_indices[focused_window_idx]] = 0;
-			getyx(focused_window, y, x);
-			mvwdelch(focused_window, y, x-1);
+			focused_box->last_element--;
+			*(focused_box->last_element) = 0;
+
+			getyx(focused_box->window, y, x);
+			mvwdelch(focused_box->window, y, x-1);
 			break;
 		default:
-			// TODO: solve the mess between char*, int* and wchar_t* 
-			// Maybe done ?
-
 			// TODO: put into a function
-			if (last_char_indices[focused_window_idx] + 2 == TEXT_CAP) {
-				show_debug_win(debug_window, src_text);
-				show_debug_win(debug_window, dest_text);
-				show_debug_win(debug_window, src_lang);
-				show_error_win(debug_window, dest_lang);
+			if (focused_box->last_element + 2 == focused_box->content + TEXT_CAP) {
+				show_debug_win(debug_window, boxes[0]->content);
+				show_debug_win(debug_window, boxes[1]->content);
+				show_debug_win(debug_window, boxes[2]->content);
+				show_error_win(debug_window, boxes[3]->content);
 				continue;
 			}
 
-			contents[focused_window_idx][last_char_indices[focused_window_idx]] = ch;
-			waddch(focused_window, ch);
-			last_char_indices[focused_window_idx]++;
+			*(focused_box->last_element) = ch;
+			focused_box->last_element++;
+			waddch(focused_box->window, ch);
 		}
 		
 		// TODO: Put this into a function (Maybe?)
 		for (int i = 0; i < WIN_AMOUNT; i++) {
-			wnoutrefresh(wins[i]);
+			wnoutrefresh(boxes[i]->window);
 		}
 		doupdate();
 	}
