@@ -1,12 +1,17 @@
-#include <ncurses.h>
 #include <stdlib.h>
+#include <ncurses.h>
+#include <assert.h>
 #include "config.h"
 
 #define WIN_AMOUNT 4
+#define CONTENT_CAP 500
 
 int main()
 {
 	initscr();
+	noecho();
+	start_color();
+	init_pair(1, COLOR_MAGENTA, COLOR_WHITE);
 
 	const WINDOW *main = subwin(stdscr, LINES - STDSCR_PADDING*2, COLS - STDSCR_PADDING*2, STDSCR_PADDING, STDSCR_PADDING);
 
@@ -46,20 +51,40 @@ int main()
 
 	WINDOW *wins[WIN_AMOUNT] = { src_langbox, src_textbox, dest_langbox, dest_textbox };
 
-	start_color();
-	init_pair(1, COLOR_MAGENTA, COLOR_WHITE);
+	/* Variable pointing to some of the previous windows. */
+	int focused_window_idx = 0;
+	WINDOW *focused_window = wins[0];
 
+	// TODO: turn this kind of code into a foreach with vararg functions (Maybe?)
+	
 	for (int i = 0; i < WIN_AMOUNT; i++) {
-		// TODO: panic() function.
-		if (wins[i] == NULL)
-			exit(1);
-
+		keypad(wins[i], TRUE);
 		wbkgd(wins[i], COLOR_PAIR(1));
-		wprintw(wins[i], "Window %d\n", i);
 		wnoutrefresh(wins[i]);
 	}
 	doupdate();
 
-	wgetch(wins[0]);
+	int ch;
+
+	while ((ch = wgetch(focused_window)) != '~') {
+		switch (ch) {
+		case '\t':
+			focused_window_idx = (focused_window_idx + 1) % WIN_AMOUNT;
+			focused_window = wins[focused_window_idx];
+			break;
+		case KEY_ENTER:
+			return 1;
+			break;
+		default:
+			waddch(focused_window, ch);
+		}
+		
+		// TODO: Put this into a function (Maybe?)
+		for (int i = 0; i < WIN_AMOUNT; i++) {
+			wnoutrefresh(wins[i]);
+		}
+		doupdate();
+	}
+
 	endwin();
 }
