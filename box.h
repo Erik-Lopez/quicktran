@@ -4,8 +4,8 @@
 #include <ncurses.h>
 
 #define WIN_AMOUNT 4
-#define TEXT_CAP 4
-#define LANG_CAP 4
+#define TEXT_CAP 500
+#define LANG_CAP 500
 
 struct Box
 {
@@ -38,8 +38,8 @@ NCURSES_BOOL box_isempty(struct Box *box)
 void box_delchtype(struct Box *box)
 {
 	if (box_isempty(box)) {
-		endwin();
-		exit(1);
+		flash();
+		return;
 	}
 
 	box->last_element--;
@@ -70,10 +70,10 @@ void box_refreshwins(struct Box **boxes)
 	doupdate();
 }
 
-void change_focused_box(struct Box **boxes, struct Box *focused_box, int *focused_box_idx)
+void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focused_box_idx)
 {
 	*focused_box_idx = (*focused_box_idx + 1) % WIN_AMOUNT;
-	focused_box = boxes[*focused_box_idx];
+	*focused_box = boxes[*focused_box_idx];
 }
 
 #endif

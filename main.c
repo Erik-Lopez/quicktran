@@ -8,8 +8,22 @@
 #include "popups.h"
 
 #define WIN_AMOUNT 4
-#define TEXT_CAP 12
-#define LANG_CAP 12
+#define TEXT_CAP 500
+#define LANG_CAP 500
+
+void translate(struct Box **boxes)
+{
+	// This is the order: src_langbox, src_textbox, dest_langbox, dest_textbox
+	chtype *src_lang = boxes[0]->content;
+	chtype *src_text = boxes[1]->content;
+	chtype *dest_lang = boxes[2]->content;
+	chtype *dest_text = boxes[3]->content;
+
+	//printw("Traducir '%ls' del '%ls' al '%ls' sería '%ls'.", src_text, src_lang, dest_lang, dest_text);
+
+	getch();
+	exit(1);
+}
 
 int main()
 {
@@ -72,7 +86,10 @@ int main()
 	while ((ch = wgetch(focused_box->window)) != '~') {
 		switch (ch) {
 		case '\t':
-			change_focused_box(&boxes, focused_box, &focused_box_idx);
+			change_focused_box(boxes, &focused_box, &focused_box_idx);
+			break;
+		case ']':
+			translate(boxes);
 			break;
 		case KEY_BACKSPACE:
 			box_delchtype(focused_box);
