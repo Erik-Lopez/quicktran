@@ -65,6 +65,7 @@ int main()
 	doupdate();
 
 	int ch;
+	int y, x;
 
 	while ((ch = wgetch(focused_window)) != '~') {
 		switch (ch) {
@@ -72,8 +73,9 @@ int main()
 			focused_window_idx = (focused_window_idx + 1) % WIN_AMOUNT;
 			focused_window = wins[focused_window_idx];
 			break;
-		case KEY_ENTER:
-			return 1;
+		case KEY_BACKSPACE:
+			getyx(focused_window, y, x);
+			mvwdelch(focused_window, y, x-1);
 			break;
 		default:
 			waddch(focused_window, ch);
