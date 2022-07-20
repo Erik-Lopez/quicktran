@@ -17,7 +17,6 @@ void translate(struct Box **boxes)
 
 #define BUFSIZE (12 + LANG_CAP*2 + 5 + LANG_CAP*2 + 3 + TEXT_CAP*2 + 1 + 10000)
 	char *options = "-brief -no-ansi";
-
 	char command[BUFSIZE];
 	snprintf(command, BUFSIZE, "trans -from \"%s\" -to \"%s\" \"%s\" %s", 
 		src_lang, dest_lang, src_text, options);
