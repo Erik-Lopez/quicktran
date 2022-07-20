@@ -8,55 +8,31 @@
 #include "box.h"
 #include "popups.h"
 
-char *wchar_to_char(wchar_t *wstr, size_t length)
-{
-	char *str = (char*)malloc(length);
-	for (size_t i = 0; i < length; i++)
-		str[i] = (char)wstr[i];
-	return str;
-}
-chtype *char_to_chtype(char *str, size_t length)
-{
-	chtype *chstr = (chtype *)malloc(length*2);
-	for (size_t i = 0; i < length; i++)
-		chstr[i] = (chtype){ str[i], A_NORMAL };
-	return chstr;
-}
-
 void translate(struct Box **boxes)
 {
-	// This is the order: src_langbox, src_textbox, dest_langbox, dest_textbox
-	wchar_t *src_wlang = (wchar_t*)boxes[0]->content;
-	wchar_t *src_text = (wchar_t*)boxes[1]->content;
-	wchar_t *dest_wlang = (wchar_t*)boxes[2]->content;
-	wchar_t *dest_wtext = (wchar_t*)boxes[3]->content;
+	char *src_lang = boxes[0]->content;
+	char *src_text = boxes[1]->content;
+	char *dest_lang = boxes[2]->content;
+	char *dest_text = boxes[3]->content;
 
-	char *src_lang = wchar_to_char(src_wlang, LANG_CAP);
-	char *dest_lang = wchar_to_char(dest_wlang, LANG_CAP);
-	char *dest_text = wchar_to_char(dest_wtext, TEXT_CAP);
-
-	//multiply times 2 because widestring to string conversion
-	//TODO: fwprintf() y en general usar widechars
-	//
-#define BUFSIZE (12 + LANG_CAP*2 + 5 + LANG_CAP*2 + 3 + TEXT_CAP*2 + 1 + 100000)
-	char *src_text2 = wchar_to_char(src_text, TEXT_CAP); 
+#define BUFSIZE (12 + LANG_CAP*2 + 5 + LANG_CAP*2 + 3 + TEXT_CAP*2 + 1 + 10000)
 	char *options = "-brief -no-ansi";
 
 	char command[BUFSIZE];
-	sprintf(command, "trans -from %s -to %s \"%s\" %s", 
-		src_lang, dest_lang, src_text2, options);
+	snprintf(command, BUFSIZE, "trans -from \"%s\" -to \"%s\" \"%s\" %s", 
+		src_lang, dest_lang, src_text, options);
 
 	FILE *pipe = popen(command, "r");
 
-	//fgetws(dest_text, TEXT_CAP, pipe);
-	while(fgets(dest_text, TEXT_CAP, pipe));
+	char ch;
+	for (int i = 0; (ch = fgetc(pipe)) != -1; i++)
+		dest_text[i] = ch;
 
-	//printw("Traducir '%ls' del '%s' al '%s' sería '%s'.", src_text, src_lang, dest_lang, (char*)dest_text);
-	
 	pclose(pipe);
 
-	wclear(boxes[3]->input_window);
-	box_addchstr(boxes[3], (chtype *)dest_text);
+	box_clear(boxes[3]);
+	box_addchstr(boxes[3], dest_text);
+	box_refreshwins(boxes);
 }
 
 int main()
@@ -121,7 +97,7 @@ int main()
 	}
 	doupdate();
 
-	chtype ch;
+	int ch;
 
 	while ((ch = wgetch(focused_box->window)) != '~') {
 		switch (ch) {
@@ -135,7 +111,7 @@ int main()
 			box_delchtype(focused_box);
 			break;
 		default:
-			box_addchtype(focused_box, ch);
+			box_addchtype(focused_box, (char)ch);
 		}
 		
 		box_refreshwins(boxes);

@@ -10,8 +10,8 @@ struct Box
 {
 	WINDOW *window;
 	WINDOW *input_window;	// A subwindow of `window` where we write. (To avoid the frame)
-	chtype content[TEXT_CAP];
-	chtype *last_element;
+	char content[TEXT_CAP];
+	char *last_element;
 	enum BoxType type;
 };
 
@@ -59,7 +59,7 @@ void box_delchtype(struct Box *box)
 	mvwdelch(box->input_window, y, x-1);
 }
 
-void box_addchtype(struct Box *box, chtype ch)
+void box_addchtype(struct Box *box, char ch)
 {
 	if (box_isfull(box) == TRUE) {
 		endwin();
@@ -71,12 +71,10 @@ void box_addchtype(struct Box *box, chtype ch)
 	waddch(box->input_window, ch);
 }
 
-void box_addchstr(struct Box *box, chtype *chstr)
+void box_addchstr(struct Box *box, char *chstr)
 {
 	while (*chstr != 0) {
 		box_addchtype(box, *chstr);
-		*box->last_element = *chstr;
-		box->last_element++;
 		chstr++;
 	}
 }
@@ -89,6 +87,13 @@ void box_refreshwins(struct Box **boxes)
 	}
 
 	doupdate();
+}
+
+void box_clear(struct Box *box)
+{
+	wclear(box->input_window);
+	while (!box_isempty(box))
+		box_delchtype(box);
 }
 
 void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focused_box_idx)
