@@ -4,16 +4,19 @@
 #include <ncurses.h>
 #include "config.h"
 
+enum BoxType { LANGBOX = 0, TEXTBOX };
 struct Box
 {
 	WINDOW *window;
 	chtype content[TEXT_CAP];
 	chtype *last_element;
+	enum BoxType type;
 };
 
-void box_create(struct Box *b, WINDOW *window)
+void box_create(struct Box *b, WINDOW *window, enum BoxType type)
 {
 	b->window = window;
+	b->type = type;
 
 	for (int i = 0; i < TEXT_CAP; i++)
 		b->content[i] = 0;

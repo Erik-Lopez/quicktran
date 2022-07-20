@@ -57,7 +57,8 @@ int main()
 	initscr();
 	noecho();
 	start_color();
-	init_pair(1, COLOR_MAGENTA, COLOR_WHITE);
+	quicktran_init_colors();
+
 	WINDOW *debug_window = newwin(0, 0, 0, 0);
 	(void) debug_window;
 
@@ -89,10 +90,10 @@ int main()
 	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
-	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin));
-	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
-	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
-	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col));
+	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin), LANGBOX);
+	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col), LANGBOX);
+	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin), TEXTBOX);
+	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col), TEXTBOX);
 
 	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
 
@@ -100,10 +101,17 @@ int main()
 	struct Box *focused_box	= boxes[focused_box_idx];
 
 	// TODO: turn this kind of code into a foreach with vararg functions (Maybe?)
-	
+	bkgd(COLOR_PAIR(BACKGROUND_COLOR));
 	for (int i = 0; i < WIN_AMOUNT; i++) {
-		keypad(boxes[i]->window, TRUE);
-		wbkgd(boxes[i]->window, COLOR_PAIR(1));
+		if (boxes[i]->type == LANGBOX) {
+			wbkgd(boxes[i]->window, COLOR_PAIR(LANGBOX_COLOR));
+
+		} else if (boxes[i]->type == TEXTBOX) {
+			wbkgd(boxes[i]->window, COLOR_PAIR(TEXTBOX_COLOR));
+			keypad(boxes[i]->window, TRUE);
+		}
+		box(boxes[i]->window, 0, 0);
+
 		wnoutrefresh(boxes[i]->window);
 	}
 	doupdate();
