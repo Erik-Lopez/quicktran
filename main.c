@@ -62,10 +62,8 @@ int main()
 	WINDOW *debug_window = newwin(0, 0, 0, 0);
 	(void) debug_window;
 
-	const WINDOW *main = subwin(stdscr, LINES - STDSCR_PADDING*2, COLS - STDSCR_PADDING*2, STDSCR_PADDING, STDSCR_PADDING);
-
-	int rows, cols;
-	getmaxyx(main, rows, cols);
+	const int rows = LINES - STDSCR_PADDING*2;
+	const int cols = COLS - STDSCR_PADDING*2;
 
 	const int available_hspace = cols - TEXT_TEXT_PADDING;
 	const int available_vspace = rows - TEXT_LANG_PADDING;
