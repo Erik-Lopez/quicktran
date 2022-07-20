@@ -71,6 +71,7 @@ int main()
 	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
+
 	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin), LANGBOX_INNER_PADDING, LANGBOX);
 	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col), LANGBOX_INNER_PADDING, LANGBOX);
 	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin), TEXTBOX_INNER_PADDING, TEXTBOX);
