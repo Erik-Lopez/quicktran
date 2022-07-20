@@ -15,6 +15,13 @@ char *wchar_to_char(wchar_t *wstr, size_t length)
 		str[i] = (char)wstr[i];
 	return str;
 }
+chtype *char_to_chtype(char *str, size_t length)
+{
+	chtype *chstr = (chtype *)malloc(length*2);
+	for (size_t i = 0; i < length; i++)
+		chstr[i] = (chtype){ str[i], A_NORMAL };
+	return chstr;
+}
 
 void translate(struct Box **boxes)
 {
@@ -22,10 +29,11 @@ void translate(struct Box **boxes)
 	wchar_t *src_wlang = (wchar_t*)boxes[0]->content;
 	wchar_t *src_text = (wchar_t*)boxes[1]->content;
 	wchar_t *dest_wlang = (wchar_t*)boxes[2]->content;
-	wchar_t *dest_text = (wchar_t*)boxes[3]->content;
+	wchar_t *dest_wtext = (wchar_t*)boxes[3]->content;
 
 	char *src_lang = wchar_to_char(src_wlang, LANG_CAP);
 	char *dest_lang = wchar_to_char(dest_wlang, LANG_CAP);
+	char *dest_text = wchar_to_char(dest_wtext, TEXT_CAP);
 
 	//multiply times 2 because widestring to string conversion
 	//TODO: fwprintf() y en general usar widechars
@@ -41,14 +49,14 @@ void translate(struct Box **boxes)
 	FILE *pipe = popen(command, "r");
 
 	//fgetws(dest_text, TEXT_CAP, pipe);
-	while(fgets((char*)dest_text, TEXT_CAP, pipe));
+	while(fgets(dest_text, TEXT_CAP, pipe));
 
 	//printw("Traducir '%ls' del '%s' al '%s' sería '%s'.", src_text, src_lang, dest_lang, (char*)dest_text);
 	
 	pclose(pipe);
 
-	wclear(boxes[3]->window);
-	waddstr(boxes[3]->window, (char*)dest_text);
+	wclear(boxes[3]->input_window);
+	box_addchstr(boxes[3], (chtype *)dest_text);
 }
 
 int main()
@@ -88,10 +96,10 @@ int main()
 	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
-	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin), LANGBOX);
-	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col), LANGBOX);
-	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin), TEXTBOX);
-	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col), TEXTBOX);
+	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin), LANGBOX_INNER_PADDING, LANGBOX);
+	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col), LANGBOX_INNER_PADDING, LANGBOX);
+	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin), TEXTBOX_INNER_PADDING, TEXTBOX);
+	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col), TEXTBOX_INNER_PADDING, TEXTBOX);
 
 	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
 
@@ -101,13 +109,12 @@ int main()
 	// TODO: turn this kind of code into a foreach with vararg functions (Maybe?)
 	bkgd(COLOR_PAIR(BACKGROUND_COLOR));
 	for (int i = 0; i < WIN_AMOUNT; i++) {
-		if (boxes[i]->type == LANGBOX) {
+		if (boxes[i]->type == LANGBOX)
 			wbkgd(boxes[i]->window, COLOR_PAIR(LANGBOX_COLOR));
-
-		} else if (boxes[i]->type == TEXTBOX) {
+		else if (boxes[i]->type == TEXTBOX)
 			wbkgd(boxes[i]->window, COLOR_PAIR(TEXTBOX_COLOR));
-			keypad(boxes[i]->window, TRUE);
-		}
+
+		keypad(boxes[i]->window, TRUE);
 		box(boxes[i]->window, 0, 0);
 
 		wnoutrefresh(boxes[i]->window);

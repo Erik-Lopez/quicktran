@@ -5,17 +5,26 @@
 #include "config.h"
 
 enum BoxType { LANGBOX = 0, TEXTBOX };
+
 struct Box
 {
 	WINDOW *window;
+	WINDOW *input_window;	// A subwindow of `window` where we write. (To avoid the frame)
 	chtype content[TEXT_CAP];
 	chtype *last_element;
 	enum BoxType type;
 };
 
-void box_create(struct Box *b, WINDOW *window, enum BoxType type)
+void box_create(struct Box *b, WINDOW *window, int inner_padding, enum BoxType type)
 {
+	int window_rows, window_cols;
+	getmaxyx(window, window_rows, window_cols);
+
 	b->window = window;
+	b->input_window = derwin(window, 
+				window_rows - 2*inner_padding, // rows without the sidepads
+				window_cols - 2*inner_padding, // cols without the sidepads
+				inner_padding, inner_padding);
 	b->type = type;
 
 	for (int i = 0; i < TEXT_CAP; i++)
@@ -46,8 +55,8 @@ void box_delchtype(struct Box *box)
 	*(box->last_element) = 0;
 
 	int y, x;
-	getyx(box->window, y, x);
-	mvwdelch(box->window, y, x-1);
+	getyx(box->input_window, y, x);
+	mvwdelch(box->input_window, y, x-1);
 }
 
 void box_addchtype(struct Box *box, chtype ch)
@@ -59,13 +68,25 @@ void box_addchtype(struct Box *box, chtype ch)
 
 	*(box->last_element) = ch;
 	box->last_element++;
-	waddch(box->window, ch);
+	waddch(box->input_window, ch);
+}
+
+void box_addchstr(struct Box *box, chtype *chstr)
+{
+	while (*chstr != 0) {
+		box_addchtype(box, *chstr);
+		*box->last_element = *chstr;
+		box->last_element++;
+		chstr++;
+	}
 }
 
 void box_refreshwins(struct Box **boxes)
 {
-	for (int i = 0; i < WIN_AMOUNT; i++)
+	for (int i = 0; i < WIN_AMOUNT; i++) {
 		wnoutrefresh(boxes[i]->window);
+		wnoutrefresh(boxes[i]->input_window);
+	}
 
 	doupdate();
 }
