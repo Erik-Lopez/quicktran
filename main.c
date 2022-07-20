@@ -8,6 +8,14 @@
 #include "box.h"
 #include "popups.h"
 
+char *wchar_to_char(wchar_t *wstr, size_t length)
+{
+	char *str = (char*)malloc(length);
+	for (size_t i = 0; i < length; i++)
+		str[i] = (char)wstr[i];
+	return str;
+}
+
 void translate(struct Box **boxes)
 {
 	char *src_lang = boxes[0]->content;
@@ -17,7 +25,6 @@ void translate(struct Box **boxes)
 
 #define BUFSIZE (12 + LANG_CAP*2 + 5 + LANG_CAP*2 + 3 + TEXT_CAP*2 + 1 + 10000)
 	char *options = "-brief -no-ansi";
-
 	char command[BUFSIZE];
 	snprintf(command, BUFSIZE, "trans -from \"%s\" -to \"%s\" \"%s\" %s", 
 		src_lang, dest_lang, src_text, options);
@@ -72,10 +79,17 @@ int main()
 	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
+<<<<<<< HEAD
 	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin), LANGBOX_INNER_PADDING, LANGBOX);
 	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col), LANGBOX_INNER_PADDING, LANGBOX);
 	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin), TEXTBOX_INNER_PADDING, TEXTBOX);
 	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col), TEXTBOX_INNER_PADDING, TEXTBOX);
+=======
+	box_create(&src_langbox, newwin(langbox_height, windows_width, main_origin, main_origin));
+	box_create(&dest_langbox, newwin(langbox_height, windows_width, main_origin, dest_boxes_col));
+	box_create(&src_textbox, newwin(textbox_height, windows_width, textboxes_row, main_origin));
+	box_create(&dest_textbox, newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col));
+>>>>>>> e0923d4490710abea327a8d17d8d10c5e58c9cfe
 
 	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
 
