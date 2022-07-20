@@ -43,12 +43,12 @@ void translate(struct Box **boxes)
 	//fgetws(dest_text, TEXT_CAP, pipe);
 	while(fgets((char*)dest_text, TEXT_CAP, pipe));
 
-	printw("Traducir '%ls' del '%s' al '%s' sería '%s'.", src_text, src_lang, dest_lang, (char*)dest_text);
-
+	//printw("Traducir '%ls' del '%s' al '%s' sería '%s'.", src_text, src_lang, dest_lang, (char*)dest_text);
+	
 	pclose(pipe);
 
-	getch();
-	exit(1);
+	wclear(boxes[3]->window);
+	waddstr(boxes[3]->window, (char*)dest_text);
 }
 
 int main()
@@ -59,6 +59,7 @@ int main()
 	start_color();
 	init_pair(1, COLOR_MAGENTA, COLOR_WHITE);
 	WINDOW *debug_window = newwin(0, 0, 0, 0);
+	(void) debug_window;
 
 	const WINDOW *main = subwin(stdscr, LINES - STDSCR_PADDING*2, COLS - STDSCR_PADDING*2, STDSCR_PADDING, STDSCR_PADDING);
 
