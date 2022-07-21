@@ -7,6 +7,17 @@
 
 enum BoxType { LANGBOX = 0, TEXTBOX };
 
+void find_last_nonwhitespace_char_position(WINDOW *window, int row, int *x)
+{
+	int maxx = getmaxx(window) - 1;
+	for (int i = maxx; i > 0; i--) {
+		int ch = mvwinch(window, row, i);
+		if ((char)ch != ' ' && (char)ch != '\n') {
+			*x = i;
+			break;
+		}
+	}
+}
 struct Box
 {
 	WINDOW *window;
@@ -52,23 +63,41 @@ void box_delchtype(struct Box *box)
 		return;
 	}
 
-	box->last_element--;
-	*(box->last_element) = 0;
-
 	int y, x;
 	getyx(box->input_window, y, x);
-	mvwdelch(box->input_window, y, x-1);
+
+	if (x == 0) {
+		y--;
+		find_last_nonwhitespace_char_position(box->input_window, y, &x);
+		wmove(box->input_window, y, x + 1);
+	} else {
+		box->last_element--;
+		*(box->last_element) = 0;
+		x--;
+		mvwdelch(box->input_window, y, x);
+	}
+
 }
 
 void box_addchtype(struct Box *box, char ch)
 {
 	if (box_isfull(box) == TRUE) {
+		// TODO: Add scrolling
 		endwin();
 		exit(1);
 	}
 
 	*(box->last_element) = ch;
 	box->last_element++;
+
+	/*int maxx = getmaxx(box->input_window);
+	int curry, currx;
+	getyx(box->input_window, curry, currx);
+
+	if (currx == maxx - 1 && (ch == '\n' || ch == 't')) {
+		flash();
+		return;
+	}*/
 	waddch(box->input_window, ch);
 }
 

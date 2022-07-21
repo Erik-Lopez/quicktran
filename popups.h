@@ -4,14 +4,14 @@
 
 #include <ncurses.h>
 
-void show_debug_win(WINDOW *debug_window, chtype *text)
+void show_debug_win(WINDOW *debug_window, char *text)
 {
-	waddchstr(debug_window, text);
+	waddstr(debug_window, text);
 	wrefresh(debug_window);
 	wgetch(debug_window);
 }
 
-void show_error_win(WINDOW *debug_window, chtype *text)
+void show_error_win(WINDOW *debug_window, char *text)
 {
 	show_debug_win(debug_window, text);
 	endwin();

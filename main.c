@@ -44,7 +44,11 @@ int main()
 			translate(boxes);
 			break;
 		case KEY_BACKSPACE:
-			box_delchtype(focused_box);
+			box_delchtype(focused_box);	
+			break;
+		case '!':
+			show_debug_win(debug_window, focused_box->content);
+			box_refreshwins(boxes);
 			break;
 		default:
 			box_addchtype(focused_box, (char)ch);
