@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <wchar.h>
 #include <locale.h>
+#include <ctype.h>
 
 #include "config.h"
 #include "box.h"
@@ -32,7 +33,6 @@ int main()
 
 	int focused_box_idx	= 0;
 	struct Box *focused_box	= boxes[focused_box_idx];
-
 
 	int ch;
 	while ((ch = wgetch(focused_box->window)) != '~') {

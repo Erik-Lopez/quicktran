@@ -87,6 +87,9 @@ void box_addchtype(struct Box *box, char ch)
 		exit(1);
 	}
 
+	if (box->type == LANGBOX && isspace(ch))
+		return;
+
 	*(box->last_element) = ch;
 	box->last_element++;
 
