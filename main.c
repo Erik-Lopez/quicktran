@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <ncurses.h>
 #include <assert.h>
 #include <wchar.h>
@@ -15,7 +16,7 @@ void translate(struct Box **boxes)
 	char *dest_lang = boxes[2]->content;
 	char *dest_text = boxes[3]->content;
 
-#define BUFSIZE (12 + LANG_CAP*2 + 5 + LANG_CAP*2 + 3 + TEXT_CAP*2 + 1 + 10000)
+#define BUFSIZE (strlen("trans -brief -no-ansi -from '' -to '' ''") + LANG_CAP*2 + TEXT_CAP*2 + 1)
 	char *options = "-brief -no-ansi";
 	char command[BUFSIZE];
 	snprintf(command, BUFSIZE, "trans -from \"%s\" -to \"%s\" \"%s\" %s", 
