@@ -25,7 +25,7 @@ const int TEXT_TEXT_PADDING	= 1;
 const int TEXT_LANG_PADDING	= 1;
 const int TEXTBOX_INNER_PADDING	= 1;
 const int LANGBOX_INNER_PADDING	= 1;
-const double TEXT_TO_LANG_RATIO	= 4.0;
+const double TEXTH_TO_LANGH_RATIO= 4.0;
 
 /* Colors */
 void quicktran_init_colors()
