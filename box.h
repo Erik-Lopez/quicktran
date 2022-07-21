@@ -1,3 +1,4 @@
+/* See COPYING file for copyright and license details. */
 #ifndef _BOX_H
 #define _BOX_H
 

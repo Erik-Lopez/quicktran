@@ -1,3 +1,4 @@
+/* See COPYING file for copyright and license details. */
 #ifndef _CONFIG_H
 #define _CONFIG_H
 

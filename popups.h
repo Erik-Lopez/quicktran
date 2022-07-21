@@ -1,3 +1,4 @@
+/* See COPYING file for copyright and license details. */
 #ifndef _POPUPS_H
 #define _POPUPS_H
 
