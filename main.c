@@ -84,6 +84,7 @@ int main()
 
 	// TODO: turn this kind of code into a foreach with vararg functions (Maybe?)
 	bkgd(COLOR_PAIR(BACKGROUND_COLOR));
+	refresh();
 	for (int i = 0; i < WIN_AMOUNT; i++) {
 		if (boxes[i]->type == LANGBOX)
 			wbkgd(boxes[i]->window, COLOR_PAIR(LANGBOX_COLOR));
