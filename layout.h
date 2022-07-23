@@ -7,8 +7,6 @@ int get_available_vspace();
 int get_langbox_height();
 int get_windows_width();
 int get_textbox_height();
-void quicktran_create_boxes(struct Box **boxes);
-void style_boxes(struct Box **boxes);
 
 int get_available_hspace()
 {
@@ -54,41 +52,6 @@ int get_textbox_height()
 	const int textbox_height = langbox_height * TEXTH_TO_LANGH_RATIO;
 
 	return textbox_height;
-}
-
-void quicktran_create_boxes(struct Box **boxes)
-{
-	const int langbox_height	= get_langbox_height();
-	const int textbox_height	= get_textbox_height();
-	const int windows_width		= get_windows_width();
-
-	const int main_origin		= STDSCR_PADDING;
-	const int dest_boxes_col	= STDSCR_PADDING + windows_width + TEXT_TEXT_PADDING;
-	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
-
-	box_create(boxes[0], newwin(langbox_height, windows_width, main_origin, main_origin), LANGBOX_INNER_PADDING, LANGBOX);
-	box_create(boxes[1], newwin(textbox_height, windows_width, textboxes_row, main_origin), TEXTBOX_INNER_PADDING, TEXTBOX);
-	box_create(boxes[2], newwin(langbox_height, windows_width, main_origin, dest_boxes_col), LANGBOX_INNER_PADDING, LANGBOX);
-	box_create(boxes[3], newwin(textbox_height, windows_width, textboxes_row, dest_boxes_col), TEXTBOX_INNER_PADDING, TEXTBOX);	
-}
-
-void style_boxes(struct Box **boxes)
-{
-	bkgd(COLOR_PAIR(BACKGROUND_COLOR));
-	refresh();
-	for (int i = 0; i < WIN_AMOUNT; i++) {
-		if (boxes[i]->type == LANGBOX)
-			wbkgd(boxes[i]->window, COLOR_PAIR(LANGBOX_COLOR));
-		else if (boxes[i]->type == TEXTBOX)
-			wbkgd(boxes[i]->window, COLOR_PAIR(TEXTBOX_COLOR));
-
-		keypad(boxes[i]->window, TRUE);
-		box(boxes[i]->window, 0, 0);
-
-		wnoutrefresh(boxes[i]->window);
-	}
-
-	doupdate();
 }
 
 #endif

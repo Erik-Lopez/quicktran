@@ -3,9 +3,12 @@
 #define _BOX_H
 
 #include <ncurses.h>
+
 #include "config.h"
+#include "layout.h"
 
 enum BoxType { LANGBOX = 0, TEXTBOX };
+enum BoxDirection { UP = 0, DOWN, LEFT, RIGHT };
 
 void find_last_nonwhitespace_char_position(WINDOW *window, int row, int *x)
 {
@@ -27,22 +30,50 @@ struct Box
 	enum BoxType type;
 };
 
-void box_create(struct Box *b, WINDOW *window, int inner_padding, enum BoxType type)
+void box_create(struct Box *box, enum BoxType type, enum BoxDirection direction)
 {
-	int window_rows, window_cols;
-	getmaxyx(window, window_rows, window_cols);
+	const int langbox_height	= get_langbox_height();
+	const int textbox_height	= get_textbox_height();
+	const int windows_width		= get_windows_width();
 
-	b->window = window;
-	b->input_window = derwin(window, 
-				window_rows - 2*inner_padding, // rows without the sidepads
-				window_cols - 2*inner_padding, // cols without the sidepads
+	const int main_origin		= STDSCR_PADDING;
+	const int right_boxes_col	= STDSCR_PADDING + windows_width + TEXT_TEXT_PADDING;
+	const int textboxes_row		= STDSCR_PADDING + langbox_height + TEXT_LANG_PADDING;
+
+	int row, col, height, inner_padding;
+	WINDOW *window;
+
+	if (direction == LEFT)
+		col = main_origin;
+	else if (direction == RIGHT)
+		col = right_boxes_col;
+	else
+		exit(1);
+
+	if (type == LANGBOX) {
+		height = langbox_height;
+		row = main_origin;
+		inner_padding = LANGBOX_INNER_PADDING;
+	} else if (type == TEXTBOX) {
+		height = textbox_height;
+		row = textboxes_row;
+		inner_padding = TEXTBOX_INNER_PADDING;
+	} else 
+		exit(1);
+
+	window = newwin(height, windows_width, row, col);
+	box->window = window;
+
+	box->input_window = derwin(window, 
+				height - 2*inner_padding, // rows without the sidepads
+				windows_width - 2*inner_padding, // cols without the sidepads
 				inner_padding, inner_padding);
-	b->type = type;
+	box->type = type;
 
 	for (int i = 0; i < TEXT_CAP; i++)
-		b->content[i] = 0;
+		box->content[i] = 0;
 
-	b->last_element = &(b->content[0]);
+	box->last_element = &(box->content[0]);
 }
 
 NCURSES_BOOL box_isfull(struct Box *box)
@@ -133,6 +164,33 @@ void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focus
 {
 	*focused_box_idx = (*focused_box_idx + 1) % WIN_AMOUNT;
 	*focused_box = boxes[*focused_box_idx];
+}
+
+void quicktran_create_boxes(struct Box **boxes)
+{
+	box_create(boxes[0], LANGBOX, LEFT);
+	box_create(boxes[1], TEXTBOX, LEFT);
+	box_create(boxes[2], LANGBOX, RIGHT);
+	box_create(boxes[3], TEXTBOX, RIGHT);
+}
+
+void style_boxes(struct Box **boxes)
+{
+	bkgd(COLOR_PAIR(BACKGROUND_COLOR));
+	refresh();
+	for (int i = 0; i < WIN_AMOUNT; i++) {
+		if (boxes[i]->type == LANGBOX)
+			wbkgd(boxes[i]->window, COLOR_PAIR(LANGBOX_COLOR));
+		else if (boxes[i]->type == TEXTBOX)
+			wbkgd(boxes[i]->window, COLOR_PAIR(TEXTBOX_COLOR));
+
+		keypad(boxes[i]->window, TRUE);
+		box(boxes[i]->window, 0, 0);
+
+		wnoutrefresh(boxes[i]->window);
+	}
+
+	doupdate();
 }
 
 #endif
