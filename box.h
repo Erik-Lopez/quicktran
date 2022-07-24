@@ -156,8 +156,10 @@ void box_refreshwins(struct Box **boxes)
 void box_clear(struct Box *box)
 {
 	wclear(box->input_window);
-	while (!box_isempty(box))
-		box_delchtype(box);
+	box->last_element = box->content;
+	box->content[0] = 0;
+	//while (!box_isempty(box))
+		//box_delchtype(box);
 }
 
 void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focused_box_idx)

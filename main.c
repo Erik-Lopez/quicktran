@@ -67,6 +67,8 @@ void translate(struct Box **boxes)
 	char *dest_lang = boxes[2]->content;
 	char *dest_text = boxes[3]->content;
 
+	box_clear(boxes[3]);
+
 	char *options = "-brief -no-ansi";
 
 #define BUFSIZE (strlen("trans -brief -no-ansi -from '' -to '' ''") + LANG_CAP*2 + TEXT_CAP*2 + 1)
@@ -82,7 +84,7 @@ void translate(struct Box **boxes)
 
 	pclose(pipe);
 
-	box_clear(boxes[3]);
+	// el problema es que aquí dest_text empieza con un 0 esto ocurre por culpa de box_clear.
 	box_addchstr(boxes[3], dest_text);
 	box_refreshwins(boxes);
 }
