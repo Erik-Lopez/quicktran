@@ -78,9 +78,11 @@ void translate(struct Box **boxes)
 
 	FILE *pipe = popen(command, "r");
 
+	int i;
 	char ch;
-	for (int i = 0; (ch = fgetc(pipe)) != -1; i++)
+	for (i = 0; (ch = fgetc(pipe)) != -1; i++)
 		dest_text[i] = ch;
+	dest_text[i - 1] = 0; // remove '\n' left by trans
 
 	pclose(pipe);
 
