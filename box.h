@@ -124,14 +124,6 @@ void box_addchtype(struct Box *box, char ch)
 	*(box->last_element) = ch;
 	box->last_element++;
 
-	/*int maxx = getmaxx(box->input_window);
-	int curry, currx;
-	getyx(box->input_window, curry, currx);
-
-	if (currx == maxx - 1 && (ch == '\n' || ch == 't')) {
-		flash();
-		return;
-	}*/
 	waddch(box->input_window, ch);
 }
 
@@ -158,8 +150,6 @@ void box_clear(struct Box *box)
 	wclear(box->input_window);
 	box->last_element = box->content;
 	box->content[0] = 0;
-	//while (!box_isempty(box))
-		//box_delchtype(box);
 }
 
 void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focused_box_idx)

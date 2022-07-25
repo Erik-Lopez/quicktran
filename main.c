@@ -84,7 +84,6 @@ void translate(struct Box **boxes)
 
 	pclose(pipe);
 
-	// el problema es que aquí dest_text empieza con un 0 esto ocurre por culpa de box_clear.
 	box_addchstr(boxes[3], dest_text);
 	box_refreshwins(boxes);
 }
