@@ -46,6 +46,9 @@ int main()
 		case KEY_BACKSPACE:
 			box_delchtype(focused_box);	
 			break;
+		case '=':		
+			box_clear(focused_box);
+			break;
 		case '!':
 			show_debug_win(debug_window, focused_box->content);
 			box_refreshwins(boxes);
