@@ -9,7 +9,6 @@
 
 #include "config.h"
 #include "box.h"
-#include "popups.h"
 #include "layout.h"
 
 void translate(struct Box **boxes);
@@ -21,9 +20,6 @@ int main()
 	noecho();
 	start_color();
 	quicktran_init_colors();
-
-	WINDOW *debug_window = newwin(0, 0, 0, 0);
-	(void) debug_window;
 
 	struct Box src_langbox, src_textbox, dest_langbox, dest_textbox;
 	struct Box *boxes[WIN_AMOUNT] = {&src_langbox, &src_textbox, &dest_langbox, &dest_textbox};
@@ -53,10 +49,6 @@ int main()
 			break;
 		case '=':		
 			box_clear(focused_box);
-			break;
-		case '!':
-			show_debug_win(debug_window, focused_box->content);
-			box_refreshwins(boxes);
 			break;
 		default:
 			box_addchtype(focused_box, (char)ch);
