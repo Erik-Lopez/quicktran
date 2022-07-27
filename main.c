@@ -71,9 +71,9 @@ void translate(struct Box **boxes)
 
 	box_clear(boxes[3]);
 
-	char *options = "-brief -no-ansi";
+	char *options = "-brief -no-ansi -no-warn";
 
-#define BUFSIZE (strlen("trans -brief -no-ansi -from '' -to '' ''") + LANG_CAP*2 + TEXT_CAP*2 + 1)
+#define BUFSIZE (strlen(options) + LANG_CAP*2 + TEXT_CAP*2 + 1)
 	char command[BUFSIZE];
 	snprintf(command, BUFSIZE, "trans -from \"%s\" -to \"%s\" \"%s\" %s", 
 		src_lang, dest_lang, src_text, options);
