@@ -153,15 +153,18 @@ void box_clear(struct Box *box)
 	box->content[0] = 0;
 }
 
-void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focused_box_idx)
+void offset_focused_box(struct Box **boxes, struct Box **focused_box, int *focused_box_idx, int offset)
 {
-	*focused_box_idx = (*focused_box_idx + 1) % WIN_AMOUNT;
+	// Modulo to keep focused_box_idx between 0 and 3 (inclusive).
+	*focused_box_idx = ((*focused_box_idx + offset) % WIN_AMOUNT + WIN_AMOUNT) % WIN_AMOUNT;
 	*focused_box = boxes[*focused_box_idx];
 
 	int y, x;
 	getyx(boxes[*focused_box_idx]->input_window, y, x);
 	wmove(boxes[*focused_box_idx]->input_window, y, x);
 }
+
+#define change_focused_box(box, focused_box, focused_box_idx) offset_focused_box(box, focused_box, focused_box_idx, 1)
 
 void quicktran_create_boxes(struct Box **boxes)
 {
