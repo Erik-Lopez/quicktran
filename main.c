@@ -34,14 +34,19 @@ int main()
 	int focused_box_idx	= 0;
 	struct Box *focused_box	= boxes[focused_box_idx];
 
-	int ch;
-	while ((ch = wgetch(focused_box->window)) != '~') {
+	int ch = '=';
+	int previous_focus_idx;
+	do {
 		switch (ch) {
 		case '\t':
 			change_focused_box(boxes, &focused_box, &focused_box_idx);
 			break;
 		case ']':
+			/* Translate and keep the cursor in its current box. */
+			previous_focus_idx = focused_box_idx - 1;
 			translate(boxes);
+			focused_box_idx = previous_focus_idx;
+			change_focused_box(boxes, &focused_box, &focused_box_idx);
 			break;
 		case KEY_BACKSPACE:
 			box_delchtype(focused_box);	
@@ -55,10 +60,12 @@ int main()
 			break;
 		default:
 			box_addchtype(focused_box, (char)ch);
+			break;
 		}
 		
+		ch = wgetch(focused_box->input_window);
 		box_refreshwins(boxes);
-	}
+	} while (ch != '~');
 
 	endwin();
 }

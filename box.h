@@ -118,13 +118,14 @@ void box_addchtype(struct Box *box, char ch)
 		exit(1);
 	}
 
-	if (box->type == LANGBOX && isspace(ch))
-		return;
-
 	*(box->last_element) = ch;
 	box->last_element++;
 
 	waddch(box->input_window, ch);
+
+	// Adding it and then removing it for keeping focused_box the same.
+	if (box->type == LANGBOX && isspace(ch))
+		box_delchtype(box);
 }
 
 void box_addchstr(struct Box *box, char *chstr)
@@ -156,6 +157,10 @@ void change_focused_box(struct Box **boxes, struct Box **focused_box, int *focus
 {
 	*focused_box_idx = (*focused_box_idx + 1) % WIN_AMOUNT;
 	*focused_box = boxes[*focused_box_idx];
+
+	int y, x;
+	getyx(boxes[*focused_box_idx]->input_window, y, x);
+	wmove(boxes[*focused_box_idx]->input_window, y, x);
 }
 
 void quicktran_create_boxes(struct Box **boxes)
@@ -176,7 +181,7 @@ void style_boxes(struct Box **boxes)
 		else if (boxes[i]->type == TEXTBOX)
 			wbkgd(boxes[i]->window, COLOR_PAIR(TEXTBOX_COLOR));
 
-		keypad(boxes[i]->window, TRUE);
+		keypad(boxes[i]->input_window, TRUE);
 		box(boxes[i]->window, 0, 0);
 
 		wnoutrefresh(boxes[i]->window);
