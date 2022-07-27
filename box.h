@@ -89,13 +89,13 @@ NCURSES_BOOL box_isempty(struct Box *box)
 
 void box_delchtype(struct Box *box)
 {
-	if (box_isempty(box)) {
-		flash();
-		return;
-	}
-
 	int y, x;
 	getyx(box->input_window, y, x);
+
+	if (box_isempty(box)) {
+		flash();
+		wmove(box->input_window, y, x);
+	}
 
 	if (x == 0) {
 		y--;
