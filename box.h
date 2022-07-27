@@ -110,7 +110,7 @@ void box_delchtype(struct Box *box)
 
 }
 
-void box_addchtype(struct Box *box, char ch)
+void box_addchtype(struct Box *box, int ch)
 {
 	if (box_isfull(box) == TRUE) {
 		// TODO: Add scrolling
@@ -118,17 +118,17 @@ void box_addchtype(struct Box *box, char ch)
 		exit(1);
 	}
 
-	*(box->last_element) = ch;
+	*(box->last_element) = (char)ch;
 	box->last_element++;
 
 	waddch(box->input_window, ch);
 
 	// Adding it and then removing it for keeping focused_box the same.
-	if (box->type == LANGBOX && isspace(ch))
+	if (box->type == LANGBOX && isspace((char)ch))
 		box_delchtype(box);
 }
 
-void box_addchstr(struct Box *box, char *chstr)
+void box_addchstr(struct Box *box, int *chstr)
 {
 	while (*chstr != 0) {
 		box_addchtype(box, *chstr);

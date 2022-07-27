@@ -60,10 +60,10 @@ int main()
 			break;
 		case '\r':
 			ch = '\n';
-			box_addchtype(focused_box, (char)ch);
+			box_addchtype(focused_box, ch);
 			break;
 		default:
-			box_addchtype(focused_box, (char)ch);
+			box_addchtype(focused_box, ch);
 			break;
 		}
 		

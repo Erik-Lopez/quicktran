@@ -6,7 +6,7 @@ void translate(struct Box **boxes)
 	char *src_lang = boxes[0]->content;
 	char *src_text = boxes[1]->content;
 	char *dest_lang = boxes[2]->content;
-	char *dest_text = boxes[3]->content;
+	int *dest_text = (int*)boxes[3]->content;
 
 	box_clear(boxes[3]);
 
@@ -20,7 +20,7 @@ void translate(struct Box **boxes)
 	FILE *pipe = popen(command, "r");
 
 	int i;
-	char ch;
+	int ch;
 	for (i = 0; (ch = fgetc(pipe)) != -1; i++)
 		dest_text[i] = ch;
 	dest_text[i - 1] = 0; // remove '\n' left by trans
